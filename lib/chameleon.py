@@ -302,6 +302,56 @@ def _reserved_floating_ips(lease_name: str) -> list[str]:
     return floating_ips
 
 
+_RESERVATION_KINDS = {
+    "physical:host": "nodes",
+    "virtual:floatingip": "floating IP",
+}
+
+
+def _lease_error_details(chameleon_lease: Any) -> str:
+    """Blazar's state of a failed lease: every reservation and every event.
+
+    Read raw from Blazar, which also returns the lease events (python-chi's
+    Lease keeps only the reservations). Falls back to the reservations python-chi
+    already loaded. Never raises -- it only builds the error message.
+    """
+    try:
+        from chi.clients import blazar
+
+        lease_json = blazar().lease.get(chameleon_lease.id)
+        reservations = lease_json.get("reservations", [])
+        events = lease_json.get("events", [])
+        degraded = lease_json.get("degraded")
+    except Exception as error:
+        reservations = list(getattr(chameleon_lease, "node_reservations", []) or []) + list(
+            getattr(chameleon_lease, "fip_reservations", []) or []
+        )
+        events = []
+        degraded = None
+        print(f"Could not read lease details from Blazar: {error}")
+
+    lines = [f"Lease id: {getattr(chameleon_lease, 'id', None)}, degraded: {degraded}"]
+    for reservation in reservations:
+        kind = _RESERVATION_KINDS.get(
+            reservation.get("resource_type"), reservation.get("resource_type")
+        )
+        line = f"  reservation ({kind}) {reservation.get('id')}: status {reservation.get('status')}"
+        for field in ("missing_resources", "resources_changed"):
+            if reservation.get(field):
+                line += f", {field}"
+        lines.append(line)
+    for event in events:
+        lines.append(
+            f"  event {event.get('event_type')}: status {event.get('status')}"
+            f" at {event.get('time')}"
+        )
+    lines.append(
+        "A reservation with status 'error' is the part that failed (nodes: usually a machine "
+        "that is unavailable; floating IP: usually no free public IP at the site)."
+    )
+    return "\n".join(lines)
+
+
 def reservation_machines(lease_name: str) -> dict[str, str]:
     """Map node reservation id -> physical machine name, read back from Blazar.
 
@@ -384,6 +434,14 @@ def create_reservation(
 
     if hasattr(chameleon_lease, "refresh"):
         chameleon_lease.refresh()
+
+    # submit() only prints "has reached status error"; stop here with Blazar's
+    # view of the lease, while it still exists (cleanup deletes it afterwards).
+    if getattr(chameleon_lease, "status", None) == "ERROR":
+        raise RuntimeError(
+            f"Lease {chameleon_lease.name} reached status ERROR.\n"
+            + _lease_error_details(chameleon_lease)
+        )
 
     node_reservation_ids = extract_node_reservation_ids(chameleon_lease)
 

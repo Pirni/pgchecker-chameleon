@@ -1,0 +1,12 @@
+# Provisioning (preinstalled on the Chameleon Jupyter host)
+python-chi>=1.0
+PyYAML>=6.0
+
+# Analysis notebooks
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.9
+
+# Notebook runtime
+jupyterlab>=4.0
+ipykernel>=6.0

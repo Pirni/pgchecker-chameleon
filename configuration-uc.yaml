@@ -1,0 +1,43 @@
+chameleon:
+  site: CHI@UC
+  # pgchecker image (Spack OpenMPI) at CHI@UC, name in Chameleon:
+  # tuwien-pgchecker-uc-compute_cascadelake_r
+  image_id: "644348af-36f2-447c-a429-b8fb148a3534"
+  keypair_name: "pgchecker"
+  network: sharednet1
+
+reservation:
+  name: "pgchecker-uc"
+  node_type: compute_cascadelake_r
+  node_count: 2
+  lease_hours: 3
+  reservation_id: null
+
+cluster:
+  name_prefix: pgchecker-node
+  # 96/node (192+ total) crashes pgchecker; 2/node is proven to work.
+  # Raise this after finding pgchecker's working limit interactively.
+  processes_per_node: 48
+
+copy_to:
+  files:
+    - local: experiment
+      remote: /home/cc/pgchecker/
+      target: all
+
+results:
+  # run.sh writes its output to <working_dir>/data
+  remote_dir: /home/cc/pgchecker/experiment/data
+  local_dir: results/pgchecker-uc-2nodes
+
+# Matrix: k (outer_repeats) x i (inner_repeats)
+# k = number of allocations (machines reserved k times, servers re-launched
+#     each time; a self-created lease is created+deleted per k, a brought-along
+#     lease is reused for all k and kept).
+# i = how often the single command below runs per allocation.
+experiment:
+  name: pgchecker-uc-2nodes
+  working_dir: /home/cc/pgchecker/experiment
+  outer_repeats: 1
+  inner_repeats: 3
+  command: bash run.sh

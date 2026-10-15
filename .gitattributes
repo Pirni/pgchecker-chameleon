@@ -1,0 +1,4 @@
+# These run on / are copied to the Linux nodes. With CRLF, bash fails on
+# `set -euo pipefail` ("invalid option name") before doing anything.
+*.sh text eol=lf
+experiment/input_*.txt text eol=lf

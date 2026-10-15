@@ -1,0 +1,12 @@
+# Generated runtime state (SSH keys, cluster state, resolved config)
+runtime/
+
+# Experiment results
+results/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/

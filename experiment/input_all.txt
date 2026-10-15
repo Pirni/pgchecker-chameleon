@@ -1,0 +1,8 @@
+MPI_Allgather --msizes-list=8,80,800,8000,80000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Allreduce --msizes-list=8,80,800,8000,80000,800000,8000000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Bcast --msizes-list=8,80,800,8000,80000,800000,8000000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Gather --msizes-list=8,80,800,8000,80000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Reduce --msizes-list=8,80,800,8000,80000,800000,8000000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Reduce_scatter_block --msizes-list=8,80,800,8000,80000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Scan --msizes-list=8,80,800,8000,80000,800000,8000000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0
+MPI_Scatter --msizes-list=8,80,800,8000,80000 --nrep=5000 --proc-sync=roundtime --rt-bench-time-ms=3000 --rt-barrier-count=0

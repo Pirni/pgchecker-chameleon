@@ -1,0 +1,49 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "actionApplication": [
+                {
+                    "@id": "#ChameleonJupyterLab"
+                }
+            ],
+            "author": [
+                {
+                    "@id": "#author_0"
+                }
+            ],
+            "datePublished": "2026-10-15T15:08:34+00:00",
+            "description": "## Overview\n\nThis artifact runs **pgchecker** from [ReproMPI](https://github.com/hunsa/reprompi/tree/main/pgchecker) on a bare-metal cluster on Chameleon Cloud. pgchecker checks MPI libraries against self-consistent performance guidelines for collective operations (e.g. `MPI_Bcast`, `MPI_Allreduce`, `MPI_Allgather`): a collective should not be slower than an equivalent combination of other collectives.\n\nThe whole experiment runs end to end from one notebook:\n\n1. **Provision**: reserve `compute_cascadelake_r` nodes (Mellanox ConnectX-6 InfiniBand), launch them from a prebuilt image, attach one Floating IP to the head node\n2. **Configure**: `/etc/hosts`, node-to-node SSH, firewall for the MPI port range\n3. **Validate**: hostname resolution, SSH and TCP between every node pair\n4. **Run**: pgchecker via `experiment/run.sh` (Spack-built Open MPI 5)\n5. **Collect**: results via rsync into `results/<experiment_id>/`\n6. **Clean up**: servers and the lease are released automatically, also on errors\n\n## Quick start\n\n1. Click **Launch on Chameleon** and open `main.ipynb`.\n2. In the **Settings** section, set `SITE` to `\"CHI@UC\"` or `\"CHI@TACC\"`. This is the only setting you need to change.\n3. Run all cells.\n\n## Experiment design\n\nRuns are organised as a **k × i matrix**:\n\n- **k**: number of independent allocations; the machines are reserved, set up and released k times, each allocation on different machines than the previous one.\n- **i**: repetitions of the benchmark within one allocation.\n\nThis separates variation between machines/allocations from variation between runs on the same machines. Each run stores its full log, metadata (`run.json`), the raw `.dat` data and the resolved configuration under a unique experiment ID. `AnalyzeBestWorstRuns.ipynb` condenses the results into best/worst-case overhead tables per collective and message size, following Hunold et al., *Parallel Computing* 129 (2026) 103205.\n\n## Requirements\n\n- A Chameleon project with a bare-metal allocation at CHI@UC or CHI@TACC\n- Default setup: 2 × `compute_cascadelake_r`, 48 MPI processes per node, 3 h lease\n- Images (community, pgchecker preinstalled via Spack):\n  - CHI@UC: `tuwien-pgchecker-uc-compute_cascadelake_r`\n  - CHI@TACC: `tuwien-pgchecker-tacc-compute_cascadelake_r`\n\n## Notes\n\n- **Cost:** a run consumes bare-metal node hours from your allocation (2 nodes, up to 3 h by default). Cleanup runs automatically after every allocation.\n- **Duration:** booting bare-metal nodes takes roughly 10–15 minutes per allocation before the benchmark starts.\n- **Processes per node:** 48 per node is the tested default; pgchecker failed with the full 96 hardware threads per node.\n- **Image:** the image is used as-is. Runtime settings (firewall, automatic updates paused during the run) are applied per allocation.\n\n## References\n\n- ReproMPI / pgchecker: https://github.com/hunsa/reprompi\n- S. Hunold et al., *Parallel Computing* 129 (2026) 103205\n- arXiv:2504.00876\n\n---\n\n*Created as part of a bachelor's thesis at **TU Wien** (Christian Pirngruber, 2026).*",
+            "disambiguatingDescription": "Reproducible pgchecker MPI benchmark on Chameleon (CHI@UC / CHI@TACC)",
+            "keywords": "experiment,reproducible research",
+            "name": "Reproducible pgchecker MPI Experiment on Chameleon"
+        },
+        {
+            "@id": "trovi.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            }
+        },
+        {
+            "@id": "#author_0",
+            "@type": "Person",
+            "affiliation": "TU Wien",
+            "email": "e12221712@student.tuwien.ac.at",
+            "name": "Christian Pirngruber"
+        },
+        {
+            "@id": "#ChameleonJupyterLab",
+            "@type": "SoftwareApplication",
+            "name": "Chameleon JupyterLab",
+            "trovi_arguments": "{}",
+            "trovi_type": "jupyterhub",
+            "url": "https://jupyter.chameleoncloud.org/"
+        }
+    ]
+}
